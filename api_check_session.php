@@ -1,8 +1,10 @@
 <?php
+ob_start();
 session_start();
 require_once 'config.php';
 sendSecurityHeaders();
 
+ob_clean();
 if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
     echo json_encode(['logged_in' => true, 'usuario' => $_SESSION['usuario']]);
 } else {
