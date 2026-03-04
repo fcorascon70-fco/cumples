@@ -19,7 +19,7 @@ if (!$pdo) {
 $mes = isset($_GET['mes']) ? (int)$_GET['mes'] : null;
 $dia = isset($_GET['dia']) ? (int)$_GET['dia'] : null;
 
-$query = "SELECT nombre_completo, dia, celular, email FROM miembros WHERE 1=1";
+$query = "SELECT nombre_completo, dia, telefono, correo FROM miembros WHERE 1=1";
 $params = [];
 
 if ($mes) {
