@@ -91,12 +91,22 @@
 
         <!-- Export Buttons -->
         <div id="export-controls" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4 flex justify-end space-x-3 hidden">
-            <button id="export-csv" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <button id="export-csv"
+                class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                    </path>
+                </svg>
                 Exportar CSV
             </button>
-            <button id="export-pdf" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <button id="export-pdf"
+                class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                    </path>
+                </svg>
                 Exportar PDF
             </button>
         </div>
@@ -279,8 +289,8 @@
 
                 // Formatear día con 0 a la izquierda si es menor a 10
                 const dayFormatted = person.dia ? String(person.dia).padStart(2, '0') : '--';
-                const cell = person.celular ? person.celular : 'N/A';
-                const email = person.email ? person.email : 'N/A';
+                const cell = person.telefono ? person.telefono : 'N/A';
+                const email = person.correo ? person.correo : 'N/A';
 
                 tr.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -308,7 +318,7 @@
             // Export logic
             exportCsvBtn.addEventListener('click', () => {
                 if (currentResults.length === 0) return;
-                
+
                 const headers = ['Nombre', 'Dia', 'Celular', 'Email'];
                 const csvRows = [headers.join(',')];
 
@@ -316,8 +326,8 @@
                     const row = [
                         `"${item.nombre_completo.replace(/"/g, '""')}"`,
                         item.dia,
-                        `"${item.celular || ''}"`,
-                        `"${item.email || ''}"`
+                        `"${item.telefono || ''}"`,
+                        `"${item.correo || ''}"`
                     ];
                     csvRows.push(row.join(','));
                 });
@@ -352,8 +362,8 @@
                 const tableData = currentResults.map(item => [
                     item.nombre_completo,
                     item.dia,
-                    item.celular || 'N/A',
-                    item.email || 'N/A'
+                    item.telefono || 'N/A',
+                    item.correo || 'N/A'
                 ]);
 
                 doc.autoTable({
