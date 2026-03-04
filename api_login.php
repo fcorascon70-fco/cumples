@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         // La contraseña en varchar(20) indica que puede no estar hasheada.
         // Verificamos si existe el usuario primero.
-        $stmt = $pdo->prepare('SELECT id, usuario, password FROM usuarios WHERE usuario = :usuario LIMIT 1');
+        $stmt = $pdo->prepare('SELECT id, username, password FROM usuarios WHERE username = :usuario LIMIT 1');
         $stmt->execute(['usuario' => $usuario]);
         $user = $stmt->fetch();
 
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Si estuviere en MD5 (no cabe), o SHA (no cabe).
             if ($password === $user['password']) {
                 $_SESSION['logged_in'] = true;
-                $_SESSION['usuario'] = $user['usuario'];
+                $_SESSION['usuario'] = $user['username'];
                 echo json_encode(['success' => true]);
                 exit;
             } else {
