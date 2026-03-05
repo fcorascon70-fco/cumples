@@ -1,5 +1,5 @@
 // API URL
-const API_URL = 'api.php';
+const API_URL = '/api';
 
 const monthSelect = document.getElementById('month-select');
 const daySelect = document.getElementById('day-select');
@@ -270,4 +270,3 @@ if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
 searchBtn.addEventListener('click', searchMiembros);
 
 init();
-
