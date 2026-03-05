@@ -37,7 +37,10 @@ class handler(BaseHTTPRequestHandler):
         try:
             conn = pymysql.connect(**config)
             with conn.cursor() as cursor:
-                if action == 'login':
+                if action == 'ping':
+                    response_data = {"success": True, "message": "API está viva y conectada a la base de datos"}
+
+                elif action == 'login':
                     length = int(self.headers.get('content-length', 0))
                     data = json.loads(self.rfile.read(length))
                     usuario = data.get('username')
@@ -62,6 +65,7 @@ class handler(BaseHTTPRequestHandler):
                     dia = query.get('dia', [None])[0]
                     cursor.execute("SELECT nombre_completo, dia, celular, email FROM miembros WHERE mes = %s AND dia = %s ORDER BY nombre_completo ASC", (mes, dia))
                     response_data = cursor.fetchall()
+
 
             conn.close()
         except Exception as e:
