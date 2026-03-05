@@ -69,8 +69,9 @@ class handler(BaseHTTPRequestHandler):
 
             conn.close()
         except Exception as e:
-            status_code = 500
-            response_data = {"success": False, "error": str(e)}
+            # Enviamos 200 pero con success False para poder ver el error real en la pantalla
+            status_code = 200
+            response_data = {"success": False, "error": f"Error de BD: {str(e)}"}
 
         self.send_response(status_code)
         self.send_header('Content-Type', 'application/json')
