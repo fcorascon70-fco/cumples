@@ -143,9 +143,21 @@ function renderResults(members) {
         return;
     }
 
+    // Create Action Bar for Export
+    const actionBar = document.createElement('div');
+    actionBar.className = 'action-bar';
+    
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'btn-secondary';
+    exportBtn.innerHTML = '<span class="btn-icon">📥</span> Exportar a CSV';
+    exportBtn.onclick = () => exportToCSV(members);
+    
+    actionBar.appendChild(exportBtn);
+    resultsGrid.appendChild(actionBar);
+
     const tableWrapper = document.createElement('div');
     tableWrapper.className = 'table-wrapper glass';
-
+    
     let tableHtml = `
         <table class="grid-table">
             <thead>
@@ -160,7 +172,7 @@ function renderResults(members) {
     `;
 
     members.forEach(m => {
-        const initials = m.nombre_completo
+        const initials = m.nombre_completo 
             ? m.nombre_completo.split(' ').filter(p => p.length > 0).map(n => n[0]).slice(0, 2).join('').toUpperCase()
             : '?';
 
@@ -184,6 +196,35 @@ function renderResults(members) {
     tableHtml += `</tbody></table>`;
     tableWrapper.innerHTML = tableHtml;
     resultsGrid.appendChild(tableWrapper);
+}
+
+function exportToCSV(members) {
+    const headers = ['Nombre Completo', 'Dia', 'Celular', 'Email'];
+    const rows = members.map(m => [
+        `"${m.nombre_completo || ''}"`,
+        `"${m.dia || ''}"`,
+        `"${m.celular || ''}"`,
+        `"${m.email || ''}"`
+    ]);
+
+    const csvContent = [
+        headers.join(','),
+        ...rows.map(r => r.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    const monthName = monthSelect.options[monthSelect.selectedIndex].text;
+    const day = daySelect.value;
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `cumpleaños_${monthName}_${day}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 if (loginForm) loginForm.addEventListener('submit', handleLogin);
