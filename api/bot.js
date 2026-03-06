@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
             <p><strong>Status:</strong> Online</p>
             <p><strong>Token Configurado:</strong> ${token ? '✅ SÍ' : '❌ NO'}</p>
             <hr>
-            <p>Zona Horaria: UTC</p>
+            <p>Zona Horaria: America/Mexico_City</p>
         `);
     }
 
@@ -30,14 +30,12 @@ module.exports = async (req, res) => {
         if (!token) return res.status(200).send('Config error');
 
         try {
-            // Obtenemos la fecha actual en la zona horaria de México (CST/CDT)
             const now = new Date();
             const mexicoTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
-            
             const monthNames = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
 
             if (text.startsWith('/start')) {
-                await sendTelegramMessage(chatId, "¡Hola! Soy el Bot de BirthdayTracker. 🎂\n\nUsa:\n/hoy - Cumpleaños de hoy\n/manana - Cumpleaños de mañana\n/mes [nombre] - Ver un mes completo");
+                await sendTelegramMessage(chatId, "¡Hola! Soy el Bot de BirthdayTracker. 🎂\n\nUsa:\n/hoy - Cumpleaños de hoy\n/manana - Cumpleaños de mañana\n/mes [nombre] - Ver un mes completo\n/salir - Finalizar interacción");
             } 
             else if (text.startsWith('/hoy')) {
                 const day = mexicoTime.getDate();
@@ -58,6 +56,9 @@ module.exports = async (req, res) => {
                 } else {
                     await handleMonthSearch(chatId, parts[1].toUpperCase());
                 }
+            }
+            else if (text.startsWith('/salir') || text.startsWith('/stop')) {
+                await sendTelegramMessage(chatId, "¡Hasta luego! Si necesitas consultar otro cumpleaños, solo escribe un comando o /start. \n\nPara dejar de recibir mensajes por completo, puedes 'Silenciar' o 'Bloquear' el bot en los ajustes del chat.");
             }
         } catch (error) {
             console.error('Error:', error);
