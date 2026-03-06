@@ -23,6 +23,7 @@ module.exports = async (req, res) => {
             } 
             else if (text.startsWith('/hoy')) {
                 const now = new Date();
+                // Ajuste a zona horaria de México (UTC-6) si es necesario, o usar UTC para consistencia
                 const day = now.getDate();
                 const monthNames = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
                 const monthName = monthNames[now.getMonth()];
@@ -90,7 +91,7 @@ async function handleMonthSearch(chatId, month) {
         .order('nombre_completo', { ascending: true });
 
     if (error) {
-        await sendTelegramMessage(chatId, "Mes no válido o error en la base de datos. Asegúrate de escribir el nombre del mes correctamente (ej: ENERO, FEBRERO).");
+        await sendTelegramMessage(chatId, "Mes no válido o error en la base de datos.");
         return;
     }
 
@@ -100,7 +101,6 @@ async function handleMonthSearch(chatId, month) {
     }
 
     let response = `📅 *Cumpleaños de ${month}:*\n\n`;
-    // Limiting response to avoid Telegram message length limits
     const limitedData = data.slice(0, 50); 
     limitedData.forEach(m => {
         response += `• [Día ${m.dia}] ${m.nombre_completo}\n`;
@@ -121,13 +121,17 @@ async function sendTelegramMessage(chatId, text) {
     }
 
     const url = `https://api.telegram.org/bot${token}/sendMessage`;
-    await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            chat_id: chatId,
-            text: text,
-            parse_mode: 'Markdown'
-        })
-    });
+    try {
+        await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: text,
+                parse_mode: 'Markdown'
+            })
+        });
+    } catch (e) {
+        console.error('Error sending message:', e);
+    }
 }
