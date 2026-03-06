@@ -1,5 +1,7 @@
-// API URL
-const API_URL = '/api';
+const SUPABASE_URL = "https://xbzyvpcqtmyhrtgkgizm.supabase.co";
+const SUPABASE_KEY = "sb_publishable_lqwGzBuvDXFT1stqUb_iDw_ta9DZlKt";
+
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const monthSelect = document.getElementById('month-select');
 const daySelect = document.getElementById('day-select');
@@ -16,11 +18,6 @@ const userDisplay = document.getElementById('user-display');
 const loginError = document.getElementById('login-error');
 
 async function init() {
-    // Verificar si estamos en localhost
-    if (window.location.protocol === 'file:') {
-        alert('ADVERTENCIA: Estás abriendo el archivo directamente. Para que el login funcione, debes usar: http://localhost/birthday/index.html');
-    }
-
     checkSession();
     try {
         await Promise.all([
@@ -53,35 +50,22 @@ async function handleLogin(e) {
     if (loginError) loginError.classList.add('hidden');
 
     try {
-        const response = await fetch(`${API_URL}?action=login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: user, password: pass })
-        });
+        const { data, error } = await supabaseClient
+            .from('usuarios')
+            .select('*')
+            .eq('usuario', user)
+            .eq('password', pass)
+            .maybeSingle();
 
-        // Debugging logs
-        console.log('Response Status:', response.status);
-        const text = await response.text();
-        console.log('Response Text:', text);
-
-        const data = JSON.parse(text);
-
-        if (!data.success) {
-            if (loginError) {
-                loginError.textContent = data.error || 'Usuario o contraseña incorrectos.';
-                loginError.classList.remove('hidden');
-            }
+        if (error || !data) {
+            if (loginError) loginError.classList.remove('hidden');
             return;
         }
 
-        localStorage.setItem('birthday_user', data.user);
-        showApp(data.user);
+        localStorage.setItem('birthday_user', data.usuario);
+        showApp(data.usuario);
     } catch (err) {
-        console.error('Detailed Error:', err);
-        if (loginError) {
-            loginError.textContent = 'Error de conexión con el servidor: ' + err.message;
-            loginError.classList.remove('hidden');
-        }
+        if (loginError) loginError.classList.remove('hidden');
     }
 }
 
@@ -91,47 +75,35 @@ function handleLogout() {
 }
 
 async function fetchMonths() {
-    try {
-        const response = await fetch(`${API_URL}?action=get_months`);
-        const data = await response.json();
+    const { data, error } = await supabaseClient
+        .from('mes')
+        .select('*')
+        .order('mesid', { ascending: true });
 
-        if (data.error) throw new Error(data.error);
+    if (error) throw error;
 
-        // Limpiar opciones previas excepto la primera
-        monthSelect.innerHTML = '<option value="">Selecciona Mes</option>';
-
-        data.forEach(m => {
-            const option = document.createElement('option');
-            option.value = m.mesid;
-            option.textContent = m.mes;
-            monthSelect.appendChild(option);
-        });
-        console.log('Meses cargados:', data.length);
-    } catch (err) {
-        console.error('Error al cargar meses:', err);
-    }
+    data.forEach(m => {
+        const option = document.createElement('option');
+        option.value = m.mes;
+        option.textContent = m.mes;
+        monthSelect.appendChild(option);
+    });
 }
 
 async function fetchDays() {
-    try {
-        const response = await fetch(`${API_URL}?action=get_days`);
-        const data = await response.json();
+    const { data, error } = await supabaseClient
+        .from('dias')
+        .select('*')
+        .order('dia', { ascending: true });
 
-        if (data.error) throw new Error(data.error);
+    if (error) throw error;
 
-        // Limpiar opciones previas excepto la primera
-        daySelect.innerHTML = '<option value="">Selecciona Día</option>';
-
-        data.forEach(d => {
-            const option = document.createElement('option');
-            option.value = d.dia;
-            option.textContent = d.dia;
-            daySelect.appendChild(option);
-        });
-        console.log('Días cargados:', data.length);
-    } catch (err) {
-        console.error('Error al cargar días:', err);
-    }
+    data.forEach(d => {
+        const option = document.createElement('option');
+        option.value = d.dia;
+        option.textContent = d.dia;
+        daySelect.appendChild(option);
+    });
 }
 
 async function searchMiembros() {
@@ -147,10 +119,14 @@ async function searchMiembros() {
     resultsGrid.innerHTML = '';
 
     try {
-        const response = await fetch(`${API_URL}?action=search_miembros&mes=${monthId}&dia=${day}`);
-        const data = await response.json();
+        const { data, error } = await supabaseClient
+            .from('miembros')
+            .select('nombre_completo, dia, celular, email')
+            .eq('mes', monthId.toString())
+            .eq('dia', day.toString())
+            .order('nombre_completo', { ascending: true });
 
-        if (data.error) throw new Error(data.error);
+        if (error) throw error;
 
         renderResults(data);
     } catch (err) {
@@ -190,7 +166,6 @@ function renderResults(members) {
                     <th>Día</th>
                     <th>Celular / Teléfono</th>
                     <th>Correo</th>
-                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -200,12 +175,6 @@ function renderResults(members) {
         const initials = m.nombre_completo
             ? m.nombre_completo.split(' ').filter(p => p.length > 0).map(n => n[0]).slice(0, 2).join('').toUpperCase()
             : '?';
-
-        // Limpiar número de celular (quitar espacios, guiones, etc.)
-        const rawPhone = m.celular ? m.celular.replace(/\D/g, '') : '';
-        const whatsappUrl = rawPhone
-            ? `https://wa.me/52${rawPhone}?text=${encodeURIComponent('¡Hola ' + m.nombre_completo + '! Te escribo de parte de BirthdayTracker para felicitarte por tu cumpleaños.')}`
-            : '#';
 
         tableHtml += `
             <tr>
@@ -219,13 +188,6 @@ function renderResults(members) {
                 <td>${m.celular || 'N/A'}</td>
                 <td>
                     ${m.email ? `<a href="mailto:${m.email}" class="email-link">${m.email}</a>` : 'N/A'}
-                </td>
-                <td>
-                    ${rawPhone ? `
-                        <a href="${whatsappUrl}" target="_blank" class="btn-whatsapp" title="Enviar WhatsApp">
-                            <span class="btn-icon">💬</span> WhatsApp
-                        </a>
-                    ` : '<span class="text-muted">Sin Celular</span>'}
                 </td>
             </tr>
         `;
